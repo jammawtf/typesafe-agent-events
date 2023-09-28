@@ -1,6 +1,6 @@
 {
   "name": "typesafe-agent-events",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tiny TypeScript library for creating type-safe action creators and handlers, facilitating secure and efficient communication between agents such as iframes and web workers.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -8,7 +8,16 @@
     "build": "tsc && tsc -p tsconfig.types.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["events", "action", "message", "agent", "iframe", "worker", "type-safe", "typescript"],
+  "keywords": [
+    "events",
+    "action",
+    "message",
+    "agent",
+    "iframe",
+    "worker",
+    "type-safe",
+    "typescript"
+  ],
   "author": "Stefan Nordling",
   "license": "MIT",
   "dependencies": {},
@@ -19,5 +28,4 @@
     "type": "git",
     "url": "https://github.com/jammawtf/typesafe-agent-events"
   }
-
 }
