@@ -1,6 +1,6 @@
 # TypeSafe Agent Actions
 
-`typesafe-agent-actions` is a minimalistic TypeScript library designed to facilitate seamless and type-safe communications between different agents like web workers or iframes in web development environments. It addresses the common challenges developers face when managing communications between disparate system components, particularly when dealing with various action types and payloads.
+`typesafe-agent-events` is a minimalistic TypeScript library designed to facilitate seamless and type-safe communications between different agents like web workers or iframes in web development environments. It addresses the common challenges developers face when managing communications between disparate system components, particularly when dealing with various action types and payloads.
 
 This library is especially useful when you need to ensure the integrity and reliability of messages passed between different parts of your application, preventing issues related to message type mismatches and ensuring that the payloads conform to expected types.
 
@@ -12,12 +12,12 @@ This library is especially useful when you need to ensure the integrity and reli
 
 Developing efficient and scalable web applications often requires the integration of different system components. Managing communications between these components can be challenging and error-prone, especially when dealing with various types of payloads and actions.
 
-`typesafe-agent-actions` offers a simple and lightweight solution to these challenges, enabling developers to define, create, and handle actions with type safety. It aims to provide a straightforward approach to managing communications between different components without the need for complex setups or heavy libraries.
+`typesafe-agent-events` offers a simple and lightweight solution to these challenges, enabling developers to define, create, and handle actions with type safety. It aims to provide a straightforward approach to managing communications between different components without the need for complex setups or heavy libraries.
 
 ## Installation
 
 ```
-npm install typesafe-agent-actions
+npm install typesafe-agent-events
 ```
 
 ## Usage
@@ -29,7 +29,7 @@ Define actions using the `createActionCreators` function. This function takes a 
 
 ```ts
 // workerApi.ts
-import { createActionCreators } from 'typesafe-agent-actions';
+import { createActionCreators } from 'typesafe-agent-events';
 
 type WorkConfig = {...}; // Define the shape of your work configuration
 
@@ -53,7 +53,7 @@ Use `bindActionDispatch` to associate an action creator object with a dispatch f
 
 ```ts
 import { toWorker } from './workerApi';
-import { bindActionDispatch } from 'typesafe-agent-actions';
+import { bindActionDispatch } from 'typesafe-agent-events';
 
 const worker = new Worker('./worker.ts', { type: 'module' });
 const postToWorker = bindActionDispatch(toWorker, (action) => worker.postMessage(action));
@@ -69,7 +69,7 @@ postToWorker.start({ ... }); // Send a 'start' action to the worker
 
 ```ts 
 import { fromWorker } from './workerApi';
-import { createHandler } from 'typesafe-agent-actions';
+import { createHandler } from 'typesafe-agent-events';
 
 const worker = new Worker('./worker.ts', { type: 'module' });
 const handler = createHandler<typeof fromWorker>({
@@ -85,12 +85,12 @@ worker.onmessage = (event) => {
 
 ### worker example
 
-Here's how you can set up `typesafe-agent-actions` within a worker to handle actions and communicate back to the main thread:
+Here's how you can set up `typesafe-agent-events` within a worker to handle actions and communicate back to the main thread:
 
 ```ts
 // worker.ts
 import { fromWorker, toWorker } from './workerApi';
-import { createHandler, bindActionDispatch } from 'typesafe-agent-actions';
+import { createHandler, bindActionDispatch } from 'typesafe-agent-events';
 
 // Bind actions to post messages back to the main thread
 const postToMain = bindActionDispatch(fromWorker, self.postMessage.bind(self));
@@ -213,4 +213,4 @@ dataHandler(someEvent); // Calls the corresponding handler or the default handle
 
 ## License
 
-`typesafe-agent-actions` is released under the [MIT License](LICENCE).
+`typesafe-agent-events` is released under the [MIT License](LICENCE).
