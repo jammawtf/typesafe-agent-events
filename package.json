@@ -8,12 +8,16 @@
     "build": "tsc && tsc -p tsconfig.types.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["events", "action", "message", "agent", "iframe", "worker", "type-safe", "typescript"],
   "author": "Stefan Nordling",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "typescript": "^2.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jammawtf/typesafe-agent-events"
   }
 
 }
