@@ -10,14 +10,16 @@
  * });
  * ```
  */
-export function createActionCreators<T extends { [k: string]: (payload?: any) => any }>(actionMap: T):
+export function createActionCreators<T extends { [k: string]: (...props: any[]) => any }>(actionMap: T):
   {
-    [K in keyof T]: T[K] extends ((p: infer P) => infer R) ? undefined extends P ? () => { type: K } : (payload: P) => { type: K; payload: R } : never;
+    [K in keyof T]: T[K] extends ((...p: infer P) => infer R) ? (...payload: P) => { type: K; payload: R } : never;
   } {
   const acc = {} as { [k: string]: (...args: any[]) => void };
   for (const key in actionMap) {
     const getPayload = actionMap[key];
-    acc[key] = (payload: any) => ({ type: key, payload: getPayload(payload) });
+    acc[key] = function () {
+      return { type: key, payload: getPayload.apply(undefined, arguments as unknown as any[]) };
+    }
   }
   return acc as any;
 }
@@ -32,14 +34,14 @@ export function createActionCreators<T extends { [k: string]: (payload?: any) =>
  * const boundActions = bindActionDispatch(actions, dispatchFunction);
  * ```
  */
-export function bindActionDispatch<T extends { [k: string]: (payload?: any) => any }>(actions: T, dispatch: (action: any) => void): {
-    [K in keyof T]: Parameters<T[K]>[0] extends infer P ? undefined extends P ? () => void : (payload: P) => void : never;
-  } {
+export function bindActionDispatch<T extends { [k: string]: (...props: any[]) => { type: string; payload?: any } }>(actions: T, dispatch: (action: any) => void): {
+  [K in keyof T]: (...props: Parameters<T[K]>) => void;
+} {
   const acc = {} as { [k: string]: (...args: any[]) => void };
   for (const key in actions) {
     const getEvent = actions[key];
-    acc[key] = (payloadProp: any) => {
-      dispatch(getEvent(payloadProp));
+    acc[key] = function () {
+      dispatch(getEvent.apply(undefined, arguments as unknown as any[]));
     }
   }
   return acc as any;
@@ -55,9 +57,16 @@ export function bindActionDispatch<T extends { [k: string]: (payload?: any) => a
  * const boundActions = bindPostMessage(actions, worker);
  * ```
  */
-export function bindPostMessage<T extends { [k: string]: (payload?: any) => any }>(actions: T, worker: { postMessage: (event: MessageEvent) => void }) {
+export function bindPostMessage<T extends { [k: string]: (payload?: any) => any }>(actions: T, worker: { postMessage: (event: { data?: any }) => void }) {
   return bindActionDispatch(actions, worker.postMessage.bind(worker));
 }
+
+type ActionTypes<Creators extends { [k: string]: (...params: any[]) => { type: string; payload?: any } }> = ReturnType<Creators[keyof Creators]>;
+
+type HandlerRecord<T extends { type: string; payload?: any }> = {
+  [Type in T['type']]: T extends { type: Type; payload: infer P } ? (payload: P) => void : never;
+}
+
 
 
 /**
@@ -73,25 +82,20 @@ export function bindPostMessage<T extends { [k: string]: (payload?: any) => any 
  * const wasHandled = handler(someAction); // will be either true or false
  * ```
  */
-export function createHandler<T extends { [k: string]: (payload?: any) => { type: string; payload?: any } }>(defs:
-  {
-    [k in keyof T]: ReturnType<T[k]> extends { type: string; payload: infer P } ? (payload: P) => void : () => void;
-  }) {
-    /**
-   * Handles the received action based on the provided action handlers.
-   * @param action The received action object containing `type` and `payload`.
-   * @returns {boolean} A boolean value indicating whether the action was successfully handled. Returns `true` if the action was handled, and `false` if the action type was not recognized or if the action object was malformed.
-   * @example
-   * ```ts
-   * const wasHandled = handleAction({ type: 'increment', payload: 1 }); // Returns true if 'increment' action is recognized and handled, otherwise returns false.
-   * ```
-   */
-  return function handleAction(action: {
-    [K in keyof T]: ReturnType<T[K]>;
-  }[keyof T]) {
+export function createHandler<T extends { [k: string]: (...payload: any[]) => { type: string; payload?: any } }>(defs: HandlerRecord<ActionTypes<T>>) {
+  /**
+ * Handles the received action based on the provided action handlers.
+ * @param action The received action object containing `type` and `payload`.
+ * @returns {boolean} A boolean value indicating whether the action was successfully handled. Returns `true` if the action was handled, and `false` if the action type was not recognized or if the action object was malformed.
+ * @example
+ * ```ts
+ * const wasHandled = handleAction({ type: 'increment', payload: 1 }); // Returns true if 'increment' action is recognized and handled, otherwise returns false.
+ * ```
+ */
+  return function handleAction(action?: {[k:string]: any}) {
     if (!action || !action.type || !(action.type in defs)) { return false; }
 
-    defs[action.type](action.payload);
+    defs[action.type as keyof typeof defs](action.payload);
     return true;
   }
 
@@ -113,11 +117,8 @@ export function createHandler<T extends { [k: string]: (payload?: any) => { type
  * dataHandler(someEvent); // Calls the corresponding handler or the default handler if no match is found
  * ```
  */
-export function createDataHandler<T extends { [k: string]: (payload?: any) => any }>(defs: {
-  // [k in keyof T]: T[k] extends (payload: infer P) => any ? (payload: P) => void : never;
-  [k in keyof T]: ReturnType<T[k]> extends { type: string; payload: infer P } ? (payload: P) => void : () => void;
-  // [k in keyof T]: VoidCallback<T[k]>
-} & { default?: (event: any) => void }) {
+export function createDataHandler<T extends { [k: string]: (...payload: any[]) => { type: string; payload?: any } }>(defs: 
+  HandlerRecord<ActionTypes<T>> & { default?: (event: any) => void }) {
   /** 
    * @param event object {data: {type, payload}}
    * 
@@ -132,7 +133,7 @@ export function createDataHandler<T extends { [k: string]: (payload?: any) => an
       }
       return;
     }
-    defs[action.type](action.payload);
+    defs[action.type as keyof typeof defs](action.payload);
 
   }
 }
