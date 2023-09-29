@@ -6,7 +6,8 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.types.json",
-    "test": "mocha --inline-diffs --require ts-node/register --watch --watch-files \"src/**/*.ts\" \"src/**/*.spec.ts\""
+    "test": "mocha --inline-diffs --require ts-node/register --watch --watch-files \"src/**/*.ts\" \"src/**/*.spec.ts\"",
+    "lint": "eslint --ext .ts src"
   },
   "keywords": [
     "events",
@@ -24,7 +25,9 @@
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/sinon": "^10.0.17",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
     "chai": "^4.3.7",
+    "eslint": "^8.50.0",
     "mocha": "^10.2.0",
     "sinon": "^16.0.0",
     "ts-node": "^10.9.1",
