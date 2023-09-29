@@ -1,6 +1,6 @@
 {
   "name": "typesafe-agent-events",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A tiny TypeScript library for creating type-safe action creators and handlers, facilitating secure and efficient communication between agents such as iframes and web workers.",
   "main": "index.js",
   "types": "index.d.ts",
